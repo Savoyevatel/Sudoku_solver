@@ -3,14 +3,6 @@ c= 0 #counting zeros
 
 grid = [[0 for i in range(z)] for j in range(z)]
 
-with open("sudoku.txt", "r") as f:
-    c = 0
-    for i in range(z):
-        row = f.readline().split()
-        for j in range(z):
-            grid[i][j] = int(row[j])
-            if grid[i][j] == 0:
-                c += 1
 #print(a)
 
 pair = [[0, 0] for i in range(c)]
@@ -56,6 +48,15 @@ def sudoku(grid):
 
             grid[row][col] = 0
     return False
+
+with open("sudoku.txt", "r") as f:
+    c = 0
+    for i in range(z):
+        row = f.readline().split()
+        for j in range(z):
+            grid[i][j] = int(row[j])
+            if grid[i][j] == 0:
+                c += 1
 
 if (sudoku(grid)):
     dis(grid)
