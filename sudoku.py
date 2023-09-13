@@ -13,15 +13,6 @@ with open("sudoku.txt", "r") as f:
                 c += 1
 
 
-def dis(a):
-    print("The solution is!")
-    for i in range(z):
-        for j in range(z):
-            print(a[i][j], end="   ")
-        print("\n")
-        print()
-
-
 grid_2 = np.transpose(np.asarray(grid)).tolist()
 
 
