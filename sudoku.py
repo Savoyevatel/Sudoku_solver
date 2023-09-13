@@ -1,5 +1,3 @@
-import numpy as np
-
 z = 9 #your signature
 
 grid = [[0 for i in range(z)] for j in range(z)]
@@ -13,7 +11,12 @@ with open("sudoku.txt", "r") as f:
                 c += 1
 
 
-grid_2 = np.transpose(np.asarray(grid)).tolist()
+grid_2 = []
+for j in range(9):
+    row = []
+    for i in range(9):
+        row.append(grid[j][i])
+    grid_2.append(row)
 
 
 def check_duplicates(lst):
