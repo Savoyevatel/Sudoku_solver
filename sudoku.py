@@ -15,7 +15,7 @@ grid_2 = []
 for j in range(9):
     row = []
     for i in range(9):
-        row.append(grid[j][i])
+        row.append(grid[i][j])
     grid_2.append(row)
 
 
