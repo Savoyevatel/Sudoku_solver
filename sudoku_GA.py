@@ -1,4 +1,7 @@
 import random
+population_size = 100
+#mutation_rate = 0.01 no longer used
+generations = 1000
 
 z = 9
 grid = [[0 for i in range(z)] for j in range(z)]
@@ -10,7 +13,6 @@ with open("sudoku.txt", "r") as f:
             grid[i][j] = int(row[j])
             if grid[i][j] == 0:
                 c += 1
-
 def dis(a):
     print("The solution is!")
     for i in range(z):
@@ -19,8 +21,16 @@ def dis(a):
         print("\n")
         print()
 
-def change(grid): #randomizes new values for each epoch grid1 is row, grid2 is column and grid 3 is 3x3 grid
-    grid_1 = [row[:] for row in grid] 
+
+def change(list1):
+    for sublist in list1:
+        list2 = [x + 1 for x in range(z) if x + 1 not in sublist]
+        random.shuffle(list2)
+
+        for i in range(len(sublist)):
+            if sublist[i] == 0 and list2:
+                sublist[i] = list2.pop()
+    grid_1 = list1
     grid_2 = [[grid_1[j][i] for j in range(z)] for i in range(z)]
     grid_3 = []
     for i in range(0, len(grid_1), 3):
@@ -34,26 +44,34 @@ def change(grid): #randomizes new values for each epoch grid1 is row, grid2 is c
                 temp_lists[k] += sublist[start_index:end_index]
 
         grid_3.extend(temp_lists)
-    for row in grid_1:
-        empty_cells = [i for i, cell in enumerate(row) if cell == 0]
-        random.shuffle(empty_cells)
-        values = list(range(1, 10))
-        for cell_index in empty_cells:
-            value = random.choice(values)
-            row[cell_index] = value
-            values.remove(value)
-    return grid_1, grid_2, grid_3
-def calculate_fitness(grid):
-    grid_1, grid_2, grid_3 = change(grid)
-    a = [sum(row) for row in grid_1] 
-    b = [sum(col) for col in grid_2] 
-    c = [sum(col) for col in grid_3]
-    d = 3 * 45 # Sum of numbers from 1 to 9
-    fitness_values = [abs(a[i] + b[i] + c[i] - d) for i in range(z)]
-    return sum(fitness_values)/z
 
-def generate_individual():
-    return grid
+    return grid_1, grid_2, grid_3
+
+pop = []
+pop2 = []
+pop3 = []
+for i in range(population_size):
+    grid_copy = [row[:] for row in grid]  # Create a copy of the original grid
+    grid_1, grid_2, grid_3 = change(grid_copy)
+    pop.append(grid_1)
+    pop2.append(grid_2)
+    pop3.append(grid_3)
+
+def calculate_fitness(pop):
+    fitness_values = []
+    rows = [[sum(subsublist) for subsublist in sublist] for sublist in pop]
+    columns = [[sum(subsublist) for subsublist in sublist] for sublist in pop2]
+    box_grid = [[sum(subsublist) for subsublist in sublist] for sublist in pop3]
+    print(rows[0])
+    print(columns[0])
+    print(box_grid[0])
+
+    for i in range(len(pop)):
+        d = 3 * 45 # Sum of numbers from 1 to 9
+        f = abs(rows[i] + columns[i] + box_grid[i] - d)
+        fitness_values.append(f)
+    return fitness_values
+fitness_values = (calculate_fitness(pop))
 
 def correct(grids, rows, col, num):
     # Check if 'num' is not in the current row, column, or 3x3 box
@@ -63,26 +81,15 @@ def correct(grids, rows, col, num):
             return False
     return True
 
-def select_parents(population, fitness_values):
-    print(fitness_values)
-    total_fitness = sum(fitness_values)/population_size
-    roulette_value = random.uniform(0, total_fitness)
-    cumulative_fitness = 0
-    for i, fit in enumerate(fitness_values):
-        cumulative_fitness += fit
-        if cumulative_fitness >= roulette_value:
-            parent1 = population[i]
-            break
-    while True:
-        roulette_value = random.uniform(0, total_fitness)
-        cumulative_fitness = 0
-        for i, fit in enumerate(fitness_values):
-            cumulative_fitness += fit
-            if cumulative_fitness >= roulette_value:
-                parent2 = population[i]
-                break
-        if parent1 != parent2:
-            return parent1, parent2
+def select_parents(pop, fitness_values):
+    fitness_values = sorted(fitness_values)
+    pop = fitness_values[:10]
+    selected_pop = [pop[i] for i in pop]
+    selected_pop = selected_pop.copy()
+    for x in selected_pop:
+        mate1 = selected_pop[random.randint(0, len(selected_pop) - 1)]
+        mate2 = selected_pop[random.randint(0, len(selected_pop) - 1)]
+    return mate1, mate2
 
 def crossover(parent1, parent2):
     half_len = len(parent1) // 2
@@ -104,25 +111,22 @@ def mutate(individual):#changes the position of only 1 value
     individual[row1][col1], individual[row2][col2] = individual[row2][col2], individual[row1][col1]
     return individual
 
-population_size = 100
-#mutation_rate = 0.01 no longer used
-generations = 1000
-
-population = [generate_individual() for _ in range(population_size)]
+population = pop
 
 for generation in range(generations):
-    fitness_values = [calculate_fitness(ind) for ind in population]
-    print(fitness_values)
-    print(f"The average fitness value is {sum(fitness_values)/population_size}!")
+    fitness_values = [calculate_fitness(ind) for ind in pop]
+    print(f"The average fitness value is {sum(fitness_values)}!")
     if any(fit == 0 for fit in fitness_values):
         print(f"Solution found in generation {generation}!")
-        dis(population[fitness_values.index(0)])
+        dis(pop[fitness_values.index(0)])
         break
 
     new_population = []
     for _ in range(population_size // 2):
-        parent1, parent2 = select_parents(population, fitness_values)
+        parent1, parent2 = select_parents(pop, fitness_values)
         child1, child2, child3 = crossover(parent2, parent1)
+        print(child1)
+        print(child1)
         mutate(child1)
         mutate(child2)
         mutate(child3)
