@@ -1,7 +1,7 @@
 import random
 population_size = 100
 #mutation_rate = 0.01 no longer used
-generations = 1000
+generations = 10000
 
 z = 9
 grid = [[0 for i in range(z)] for j in range(z)]
@@ -62,15 +62,16 @@ def calculate_fitness(pop):
     rows = [[sum(subsublist) for subsublist in sublist] for sublist in pop]
     columns = [[sum(subsublist) for subsublist in sublist] for sublist in pop2]
     box_grid = [[sum(subsublist) for subsublist in sublist] for sublist in pop3]
-    print(rows[0])
-    print(columns[0])
-    print(box_grid[0])
-
+    rows = [len([x for x in sublist if x == 45]) for sublist in rows]
+    columns = [len([x for x in sublist if x == 45]) for sublist in columns]
+    box_grid = [len([x for x in sublist if x == 45]) for sublist in box_grid]
     for i in range(len(pop)):
-        d = 3 * 45 # Sum of numbers from 1 to 9
+        d = 3 * 9 # Sum of numbers from 1 to 9
         f = abs(rows[i] + columns[i] + box_grid[i] - d)
         fitness_values.append(f)
+
     return fitness_values
+
 fitness_values = (calculate_fitness(pop))
 
 def correct(grids, rows, col, num):
@@ -83,8 +84,8 @@ def correct(grids, rows, col, num):
 
 def select_parents(pop, fitness_values):
     fitness_values = sorted(fitness_values)
-    pop = fitness_values[:10]
-    selected_pop = [pop[i] for i in pop]
+    indices = sorted(range(len(fitness_values)), key=lambda i: fitness_values[i])[:10]
+    selected_pop = [pop[i] for i in indices]
     selected_pop = selected_pop.copy()
     for x in selected_pop:
         mate1 = selected_pop[random.randint(0, len(selected_pop) - 1)]
@@ -114,8 +115,8 @@ def mutate(individual):#changes the position of only 1 value
 population = pop
 
 for generation in range(generations):
-    fitness_values = [calculate_fitness(ind) for ind in pop]
-    print(f"The average fitness value is {sum(fitness_values)}!")
+    fitness_values = calculate_fitness(pop)
+    print(f"The average fitness value is {sum(fitness_values)/len(fitness_values)}!")
     if any(fit == 0 for fit in fitness_values):
         print(f"Solution found in generation {generation}!")
         dis(pop[fitness_values.index(0)])
@@ -125,11 +126,9 @@ for generation in range(generations):
     for _ in range(population_size // 2):
         parent1, parent2 = select_parents(pop, fitness_values)
         child1, child2, child3 = crossover(parent2, parent1)
-        print(child1)
-        print(child1)
         mutate(child1)
         mutate(child2)
         mutate(child3)
-        new_population.extend([child1, child2])
+        new_population.append([child1, child2])
 
     population = new_population
