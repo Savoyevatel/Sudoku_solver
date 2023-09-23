@@ -1,7 +1,7 @@
 import random
 population_size = 100
 #mutation_rate = 0.01 no longer used
-generations = 10000
+generations = 1000
 
 z = 9
 grid = [[0 for i in range(z)] for j in range(z)]
@@ -115,7 +115,7 @@ def mutate(individual):#changes the position of only 1 value
 population = pop
 
 for generation in range(generations):
-    fitness_values = calculate_fitness(pop)
+    fitness_values = calculate_fitness(population)
     print(f"The average fitness value is {sum(fitness_values)/len(fitness_values)}!")
     if any(fit == 0 for fit in fitness_values):
         print(f"Solution found in generation {generation}!")
@@ -129,6 +129,6 @@ for generation in range(generations):
         mutate(child1)
         mutate(child2)
         mutate(child3)
-        new_population.append([child1, child2])
+        new_population.extend([child1, child2])
 
     population = new_population
