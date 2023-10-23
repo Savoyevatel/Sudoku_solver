@@ -1,6 +1,6 @@
 import random
 population_size = 100
-generations = 1000
+generations = 10000
 
 z = 9
 grid = [[0 for i in range(z)] for j in range(z)]
@@ -96,14 +96,16 @@ def select_parents(pop, fitness_values):
     selected_10 = selected_pop.copy()
     mate1 = selected_10[random.randint(0, 9)]
     mate2 = selected_10[random.randint(0, 9)]
-    print(mate1,mate2)
+    #print("########")
+    #print(mate1)
+    #print("########")
     return mate1, mate2
 
 def crossover(parent1, parent2):
     n = 4
-    c_point = sorted(random.sample(range(1, 9), 4))
-    c_point2 = sorted(random.sample(range(1, 9), 4))
-    c_point3 = sorted(random.sample(range(1, 9), 4))
+    c_point = sorted(random.sample(range(1, 9), n))
+    c_point2 = sorted(random.sample(range(1, 9), n))
+    c_point3 = sorted(random.sample(range(1, 9), n))
 
     gridc1 = [[parent2[i][j] if j in c_point else parent1[i][j] for j in range(len(parent1[i]))] for i in
                   range(len(parent1))]
@@ -112,17 +114,28 @@ def crossover(parent1, parent2):
                   range(len(parent1))]
     gridc3 = [[parent2[i][j] if j in c_point3 else parent1[i][j] for j in range(len(parent1[i]))] for i in
                   range(len(parent1))]
+
     return gridc1, gridc2, gridc3
 
 def mutate(list1):#changes the position of only 1 value
-    if random.random() < 0.02:
-        # Randomly select two different indices
-        i1, j1, i2, j2 = random.sample(range(len(list1)), 4)
+    x = random.randint(1,100)
+    if x >=24:
+        fixed_positions = {(r, c) for r in range(len(list1)) for c in range(len(list1[0])) if origin_grid[r][c] != 0}
 
-        # Swap the values at the selected indices
-        list1[i1][j1], list1[i2][j2] = list1[i2][j2], list1[i1][j1]
+        # Step 2: Create a list of swappable positions
+        swappable_positions = [(r, c) for r in range(len(list1)) for c in range(len(list1[0])) if
+                               (r, c) not in fixed_positions]
 
-    return list1
+        # Step 3: Randomly select two positions for swapping
+        random.shuffle(swappable_positions)
+        position1, position2 = swappable_positions[:2]
+
+        # Step 4: Swap the values at the selected positions in list1
+        list1[position1[0]][position1[1]], list1[position2[0]][position2[1]] = list1[position2[0]][position2[1]], \
+        list1[position1[0]][position1[1]]
+        return list1
+    else:
+        return list1
 
 
 population = pop
@@ -132,12 +145,12 @@ for generation in range(generations):
     print(f"The average fitness value is {sum(fitness_values)/len(fitness_values)}!")
     if any(fit == 1 for fit in fitness_values):
         print(f"Solution found in generation {generation}!")
-        dis(pop[fitness_values.index(0)])
+        dis(population[fitness_values.index(0)])
         break
 
     new_population = []
     for _ in range(population_size // 3):
-        parent1, parent2 = select_parents(pop, fitness_values)
+        parent1, parent2 = select_parents(population, fitness_values)
         child1, child2, child3 = crossover(parent2, parent1)
         mutate(child1)
         mutate(child2)
